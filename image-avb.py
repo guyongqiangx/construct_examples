@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 import os
 
 from construct import *
+=======
+#!/usr/bin/env python3
+
+import os
+
+from construct import *
+from construct.lib import hexdump
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
 
 # external/avb/libavb/avb_vbmeta_image.h
 # AvbVBMetaImageHeader 256 bytes
@@ -28,6 +37,7 @@ AvbVBMetaImageHeader = Struct(
     Bytes(80)  # Padding
 )
 
+<<<<<<< HEAD
 """
 # external/avb/libavb/avb_descriptor.h
 AvbDescriptorTag = Enum(Int64ub,
@@ -39,6 +49,8 @@ AvbDescriptorTag = Enum(Int64ub,
                      )
 """
 
+=======
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
 AvbDescriptorHeader = Struct(
     "tag" / Enum(Int64ub,
                  PROPERTY=0,
@@ -105,6 +117,7 @@ AvbChainPartitionDescriptor = Struct(
     Bytes(64)  # reserved[64]
 )
 
+<<<<<<< HEAD
 
 def AlignPadding(length, align):
     return If(length % align > 0, Padding(align - length % align))
@@ -112,44 +125,62 @@ def AlignPadding(length, align):
 AvbDescriptor = Struct(
     "parent_descriptor" / AvbDescriptorHeader,
     "data" / Switch(this.parent_descriptor.tag,
+=======
+AvbDescriptor = Struct(
+    "parent_descriptor" / AvbDescriptorHeader,
+    "data" / Aligned(8, Switch(this.parent_descriptor.tag,
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
                           {
                               "PROPERTY": Struct(
                                   "descriptor" / AvbPropertyDescriptor,
                                   "key" / PaddedString(this.descriptor.key_num_bytes + 1, "ascii"),
                                   "value" / PaddedString(this.descriptor.value_num_bytes + 1, "ascii"),
+<<<<<<< HEAD
                                   "length" / Computed(AvbPropertyDescriptor.sizeof() +
                                                       this.descriptor.key_num_bytes + 1 +
                                                       this.descriptor.value_num_bytes + 1),
+=======
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
                               ),
                               "HASHTREE": Struct(
                                   "descriptor" / AvbHashtreeDescriptor,
                                   "partition_name" / PaddedString(this.descriptor.partition_name_len, "utf8"),
                                   "salt" / Hex(Bytes(this.descriptor.salt_len)),
                                   "root_digest" / Hex(Bytes(this.descriptor.root_digest_len)),
+<<<<<<< HEAD
                                   "length" / Computed(AvbHashtreeDescriptor.sizeof() +
                                                       this.descriptor.partition_name_len +
                                                       this.descriptor.salt_len +
                                                       this.descriptor.root_digest_len),
+=======
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
                               ),
                               "HASH": Struct(
                                   "descriptor" / AvbHashDescriptor,
                                   "partition_name" / PaddedString(this.descriptor.partition_name_len, "utf8"),
                                   "salt" / Hex(Bytes(this.descriptor.salt_len)),
                                   "digest" / Hex(Bytes(this.descriptor.digest_len)),
+<<<<<<< HEAD
                                   "length" / Computed(AvbHashDescriptor.sizeof() +
                                                       this.descriptor.partition_name_len +
                                                       this.descriptor.salt_len +
                                                       this.descriptor.digest_len),
+=======
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
                               ),
                               "KERNEL_CMDLINE": Struct(
                                   "descriptor" / AvbKernelCmdlineDescriptor,
                                   "kernel_cmdline" / PaddedString(this.descriptor.kernel_cmdline_length, "utf8"),
+<<<<<<< HEAD
                                   "length" / Computed(AvbKernelCmdlineDescriptor.sizeof() + this.descriptor.kernel_cmdline_length),
+=======
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
                               ),
                               "CHAIN_PARTITION": Struct(
                                   "descriptor" / AvbChainPartitionDescriptor,
                                   "partition_name" / PaddedString(this.descriptor.partition_name_len, "utf8"),
                                   "public_key" / Hex(Bytes(this.descriptor.public_key_len)),
+<<<<<<< HEAD
                                   "length" / Computed(AvbChainPartitionDescriptor.sizeof() +
                                                       this.descriptor.partition_name_len +
                                                       this.descriptor.public_key_len),
@@ -159,6 +190,15 @@ AvbDescriptor = Struct(
     "size" / Computed(AvbDescriptorHeader.sizeof() + this.parent_descriptor.num_bytes_following)
 )
 
+=======
+                              ),
+                          })
+                     ),
+    "size" / Computed(AvbDescriptorHeader.sizeof() + this.parent_descriptor.num_bytes_following)
+)
+
+
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
 AvbFooter = Struct(
     "magic" / Const(b'AVBf'),
     "version_major" / Int32ub,
@@ -199,7 +239,11 @@ def parse_avbfooter_image_file(filename):
 def parse_vbmeta_image_file(filename):
     with open(filename, "rb") as f:
         data = f.read(AvbVBMetaImageHeader.sizeof())
+<<<<<<< HEAD
         # hexdump(data)
+=======
+        print(hexdump(data, 16))
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
         header = AvbVBMetaImageHeader.parse(data)
         print(header)
 
@@ -220,6 +264,7 @@ def parse_vbmeta_image_file(filename):
             print(d.value)
 
 
+<<<<<<< HEAD
 def hexdump(data, line_size=16, indent=0, prefix=""):
     for i in range(len(data)):
         if i % line_size == 0:
@@ -229,6 +274,8 @@ def hexdump(data, line_size=16, indent=0, prefix=""):
             print("", end="\n")
 
 
+=======
+>>>>>>> 8524d52... 添加 Construct 解析的一些示例
 if __name__ == "__main__":
     # parse_avbfooter_image_file("data/dtbo.avb.img")
     parse_vbmeta_image_file("data/vbmeta.img")
