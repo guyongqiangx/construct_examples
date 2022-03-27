@@ -97,7 +97,7 @@ LpMetaData = Struct(
 )
 
 LpMetaLayout = Struct(
-    # Bytes(LP_PARTITION_RESERVED_BYTES),
+    Bytes(LP_PARTITION_RESERVED_BYTES),
     "gemometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
     "gemometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
     "metadata" / Padded(LP_METADATA_SIZE, LpMetaData),
@@ -122,7 +122,7 @@ def parse_metadata_header(filename):
 
 def parse_metadata(filename):
     with open(filename, 'rb') as f:
-        data = f.read()
+        data = f.read(0x300000)
         meta = LpMetaLayout.parse(data)
         print(meta)
 
@@ -131,4 +131,5 @@ if __name__ == "__main__":
     # print("{:x}".format(1095520304))
     # parse_metadata("data/super_metadata.img")
     # parse_metadata_header("data/super_metadata.img")
-    parse_metadata("data/super_metadata_with_backup.bin")
+    # parse_metadata("data/super_metadata_with_backup.bin")
+    parse_metadata("data/super_raw_3m.img")
