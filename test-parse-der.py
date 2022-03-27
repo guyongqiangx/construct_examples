@@ -83,8 +83,8 @@ def test_der_format():
     print(item)
     print(hexdump(item.payload.data, 16))
     #print(hexdump(item.header, 16))
-    os.system('rm -rf payload.bin')
-    with open('payload.bin', 'wb') as w:
+    os.system('rm -rf data/der-payload.bin')
+    with open('data/der-payload.bin', 'wb') as w:
         w.write(item.payload.data)
 
 
