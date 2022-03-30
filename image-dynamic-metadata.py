@@ -24,7 +24,23 @@ LpMetadataTableDescriptor = Struct(
     "entry_size" / Int32ul
 )
 
-LpMetadataHeader = Struct(
+# Android Q, v10.0
+LpMetadataHeaderV1_0 = Struct(
+    "magic" / Hex(Const(0x414c5030, Int32ul)),
+    "major_version" / Int16ul,
+    "minor_version" / Int16ul,
+    "header_size" / Int32ul,
+    "header_checksum" / Hex(Bytes(32)),
+    "tables_size" / Int32ul,
+    "tables_checksum" / Hex(Bytes(32)),
+    "partitions" / LpMetadataTableDescriptor,
+    "extents" / LpMetadataTableDescriptor,
+    "groups" / LpMetadataTableDescriptor,
+    "block_devices" / LpMetadataTableDescriptor
+)
+
+# Android R, v10.2
+LpMetadataHeaderV1_2 = Struct(
     "magic" / Hex(Const(0x414c5030, Int32ul)),
     "major_version" / Int16ul,
     "minor_version" / Int16ul,
@@ -38,6 +54,23 @@ LpMetadataHeader = Struct(
     "block_devices" / LpMetadataTableDescriptor,
     "flags" / Int32ul,
     Padding(124)
+)
+
+LpMetadataHeader = Struct(
+    "magic" / Hex(Const(0x414c5030, Int32ul)),
+    "major_version" / Int16ul,
+    "minor_version" / Int16ul,
+    "header_size" / Int32ul,
+    "header_checksum" / Hex(Bytes(32)),
+    "tables_size" / Int32ul,
+    "table_checksum" / Hex(Bytes(32)),
+    "partitions" / LpMetadataTableDescriptor,
+    "extents" / LpMetadataTableDescriptor,
+    "groups" / LpMetadataTableDescriptor,
+    "block_devices" / LpMetadataTableDescriptor,
+    # Android R, v10.2
+    "flags" / If(this.minor_version >= 2, Int32ul),
+    If(this.minor_version >= 2, Padding(124)),
 )
 
 LpMetadataPartition = Struct(
@@ -72,22 +105,6 @@ LpMetadataBlockDevice = Struct(
     "flags" / Int32ul
 )
 
-LpMetadataHeaderV1_0 = Struct(
-    "magic" / Int32ul,
-    "major_version" / Int16ul,
-    "minor_version" / Int16ul,
-    "header_size" / Int32ul,
-    "header_checksum" / Hex(Bytes(32)),
-    "tables_size" / Int32ul,
-    "tables_checksum" / Hex(Bytes(32)),
-    "partitions" / LpMetadataTableDescriptor,
-    "extents" / LpMetadataTableDescriptor,
-    "groups" / LpMetadataTableDescriptor,
-    "block_devices" / LpMetadataTableDescriptor
-)
-
-LpMetadataHeaderV1_2 = LpMetadataHeader
-
 LpMetaData = Struct(
     "header" / LpMetadataHeader,
     "partitions" / Array(this.header.partitions.num_entries, LpMetadataPartition),
@@ -96,29 +113,23 @@ LpMetaData = Struct(
     "devices" / Array(this.header.block_devices.num_entries, LpMetadataBlockDevice),
 )
 
+"""
 LpMetaLayout = Struct(
     Bytes(LP_PARTITION_RESERVED_BYTES),
     "gemometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
     "gemometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
     "metadata" / Padded(LP_METADATA_SIZE, LpMetaData),
-    "metadata_backup" / Padded(LP_METADATA_SIZE, LpMetaData)
+    "metadata_backup" / Padded(LP_METADATA_SIZE, LpMetaData),
 )
-
-
-def parse_metadata_header(filename):
-    with open(filename, 'rb') as f:
-        data = f.read(LpMetadataGeometry.sizeof())
-        lpmeta = LpMetadataGeometry.parse(data)
-        print(lpmeta)
-
-        data = f.read(LpMetadataGeometry.sizeof())
-        backup = LpMetadataGeometry.parse(data)
-        print(backup)
-
-        data = f.read(LpMetadataHeader.sizeof())
-        header = LpMetadataHeader.parse(data)
-        print(header)
-
+"""
+LpMetaLayout = Struct(
+    Bytes(LP_PARTITION_RESERVED_BYTES),
+    "gemometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
+    "gemometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
+    "metadata" / Padded(LP_METADATA_SIZE, LpMetaData),
+    # "metadata_backup" / Array(this.gemometry.metadata_slot_count * 2 - 1, Padded(LP_METADATA_SIZE, LpMetaData))
+    Bytes((this.gemometry.metadata_slot_count * 2 - 1) * LP_METADATA_SIZE)
+)
 
 def parse_metadata(filename):
     with open(filename, 'rb') as f:
@@ -128,8 +139,5 @@ def parse_metadata(filename):
 
 
 if __name__ == "__main__":
-    # print("{:x}".format(1095520304))
-    # parse_metadata("data/super_metadata.img")
-    # parse_metadata_header("data/super_metadata.img")
-    # parse_metadata("data/super_metadata_with_backup.bin")
-    parse_metadata("data/super_raw_3m.img")
+    # parse_metadata(r"data/super-raw-meta-1.0-q.bin")
+    parse_metadata(r"data/super-raw-meta-1.2-r.bin")
