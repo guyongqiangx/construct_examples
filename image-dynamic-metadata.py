@@ -116,25 +116,24 @@ LpMetaData = Struct(
 """
 LpMetaLayout = Struct(
     Bytes(LP_PARTITION_RESERVED_BYTES),
-    "gemometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
-    "gemometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
+    "geometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
+    "geometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
     "metadata" / Padded(LP_METADATA_SIZE, LpMetaData),
     "metadata_backup" / Padded(LP_METADATA_SIZE, LpMetaData),
 )
 """
 LpMetaLayout = Struct(
     Bytes(LP_PARTITION_RESERVED_BYTES),
-    "gemometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
-    "gemometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
-    "metadata" / Padded(LP_METADATA_SIZE, LpMetaData),
-    # "metadata_backup" / Array(this.gemometry.metadata_slot_count * 2 - 1, Padded(LP_METADATA_SIZE, LpMetaData))
-    Bytes((this.gemometry.metadata_slot_count * 2 - 1) * LP_METADATA_SIZE)
+    "geometry" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
+    "geometry_backup" / Padded(LP_GEOMETRY_SIZE, LpMetadataGeometry),
+    "metadata" / Array(this.geometry.metadata_slot_count, Padded(LP_METADATA_SIZE, LpMetaData)),
+    "metadata_backup" / Array(this.geometry.metadata_slot_count, Padded(LP_METADATA_SIZE, LpMetaData)),
 )
 
 def parse_metadata(filename):
     with open(filename, 'rb') as f:
         data = f.read(0x300000)
-        meta = LpMetaLayout.parse(data)
+        meta = Debugger(LpMetaLayout).parse(data)
         print(meta)
 
 
